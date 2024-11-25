@@ -1,0 +1,90 @@
+/* General Styles */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f9f9f9;
+  color: #333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Welcome Page */
+.welcome-container {
+  text-align: center;
+  background-color: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.welcome-container .button-group {
+  margin-top: 20px;
+}
+
+.welcome-container .btn {
+  text-decoration: none;
+  color: white;
+  background-color: #ffee50;
+  padding: 10px 20px;
+  border-radius: 5px;
+  margin: 0 10px;
+  font-size: 1rem;
+}
+
+.welcome-container .btn:hover {
+  background-color: #ffee50;
+}
+
+/* Auth Pages */
+.auth-container {
+  background-color: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+}
+
+.auth-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.auth-container .form-group {
+  margin-bottom: 15px;
+}
+
+.auth-container .form-group label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.auth-container .form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.auth-container .btn {
+  width: 100%;
+  padding: 10px;
+  background-color: #ffee50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.auth-container .btn:hover {
+  background-color: #ffee50;
+}
+
+.auth-container p {
+  text-align: center;
+  margin-top: 10px;
+}
