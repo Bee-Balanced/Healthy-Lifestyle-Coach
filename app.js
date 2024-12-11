@@ -1,6 +1,6 @@
 // import
 import express from "express";
-import { ChartJSNodeCanvas } from "chartjs-node-canvas";
+const { Chart } = await import('chart.js');
 
 // create express app and define port
 const app = express();
