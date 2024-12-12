@@ -1,6 +1,10 @@
 // import
 import express from "express";
 import { ChartJSNodeCanvas } from "chartjs-node-canvas";
+import helmet from 'helmet';
+import fs from 'fs';
+import path from 'path';
+import {handleSignup} from './signup.js';
 
 // create express app and define port
 const app = express();
@@ -9,6 +13,14 @@ const PORT = 3000;
 // set up middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
+app.use(helmet.contentSecurityPolicy({
+  directives : {
+    defaultSrc: ["'self'"],
+    fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+    styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+    scriptsrc: ["'self'",'https://cdngs.c1oudflare.com'],
+  },
+}));
 app.set("view engine", "ejs");
 
 // dummy survey data
@@ -86,6 +98,16 @@ app.get("/survey", (req, res) => {
   res.render("survey.ejs");
 });
 
+// Route for login ("/login")
+app.get ("/login", (req, res) => {
+  res. render ('login');
+});
+
+// Route for signup ("/signup")
+app.get("/signup", (reg, res) => {
+res. render ('signup');
+});
+
 // define route for progress chart
 app.get("/chart", async (req, res) => {
   const imageBuffer = await generateChart(chartInputData);
@@ -102,6 +124,31 @@ app.post("/submit-survey", (req, res) => {
 
   res.redirect("/survey");
 });
+
+// Handle POST request for login
+app.post('/login', (req, res) => {
+  const {email, password } = req. body;
+
+  fs.readFile('users.txt', 'utf8', (err, data) => {
+    if (err) {
+      console.log(err);
+      return res.send( 'Error reading user data');
+    }
+    const users = data.split('\n').map(line => {
+      const [name, email, password] = line.split('/');
+      return { name, email, password };
+    });
+    const user = users.find(u => u.email === email && u.password === password);
+    if (user) {
+      res.redirect('/survey');
+    } else {
+      res.render('login', { error: 'Incorrect credentials. Please try again.' });
+    }
+  });
+});
+
+// Handle POST request for signup
+app.post('/signup', handleSignup); 
 
 // Start the server
 app.listen(PORT, () => {
