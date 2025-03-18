@@ -1,0 +1,34 @@
+<script type="module">
+  import Plotly from 'plotly.js-dist';
+
+  document.addEventListener("DOMContentLoaded", function () {
+  // Data passed from backend (server-side rendering)
+  const overallData = <%- JSON.stringify(overallData) %>;
+  const mentalData = <%- JSON.stringify(mentalData) %>;
+  const physicalData = <%- JSON.stringify(physicalData) %>;
+  const days = <%- JSON.stringify(days) %>;
+
+  function drawChart(chartId, title, data) {
+    Plotly.newPlot(chartId, [{
+      x: days,
+      y: data,
+      type: 'scatter',
+      mode: 'lines+markers',
+      marker: { color: '#ffd700' }, // Yellow markers
+      line: { color: '#ffd700' }   // Yellow line
+    }], {
+      title: title,
+      titlefont: { color: '#ffd700' }, // Yellow title
+      xaxis: { title: "Days", tickfont: { color: '#ffd700' }, linecolor: '#ffd700' }, // Yellow axis
+      yaxis: { title: "Score", range: [0, 10], tickfont: { color: '#ffd700' }, linecolor: '#ffd700' }, // Yellow axis
+      plot_bgcolor: '#222', // Dark background for the plot
+      paper_bgcolor: '#222', // Dark background for the overall chart
+    });
+  }
+
+  drawChart("overallChart", "Overall Health Progress", overallData);
+  drawChart("mentalChart", "Mental Health Progress", mentalData);
+  drawChart("physicalChart", "Physical Health Progress", physicalData);
+});
+
+</script>

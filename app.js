@@ -1,4 +1,4 @@
-// imports
+// Imports
 import express from "express";
 import helmet from "helmet";
 import fs from "fs";
@@ -6,9 +6,9 @@ import path from "path";
 import { handleSignup } from "./signup.js";
 
 const app = express();
-const PORT = 3000; // local port
+const PORT = 3000; // Local port
 
-// set up middleware
+// Set up middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.use(
@@ -21,57 +21,96 @@ app.use(
     }
   })
 );
+app.use((req, res, next) => {
+  res.setHeader("Content-Security-Policy", "script-src 'self' 'unsafe-inline' https://cdn.plot.ly;");
+  next();
+});
+
 app.set("view engine", "ejs");
 
 let userProgress = {};
+let surveyResults = {
+  overall: [5, 8, 2],
+  mental: [7, 6, 5],
+  physical: [8, 7, 9],
+  days: ['Day 1', 'Day 2', 'Day 3']
+};
 
+// Redirect to login page
 app.get("/", (req, res) => {
   res.redirect("/login");
 });
 
-// login
+// Login route
 app.get("/login", (req, res) => {
   res.render("login");
 });
 
-// signup
+// Signup route
 app.get("/signup", (req, res) => {
   res.render("signup");
 });
 
-// logout, goes back to login page
+// Logout and reset progress
 app.get("/logout", (req, res) => {
-  userProgress = {}; // Reset progress
+  userProgress = {};
   res.redirect("/login");
 });
 
-// home page, to start surveys
+// Home page - Displays updated charts
 app.get("/home", (req, res) => {
-  res.render("home");
+  res.render("home", { 
+    overallData: surveyResults.overall, 
+    mentalData: surveyResults.mental, 
+    physicalData: surveyResults.physical, 
+    days: surveyResults.days 
+  });
 });
 
-// surveys
+
+// Survey route
 app.get("/survey", (req, res) => {
   const section = req.query.section || "general"; // Default to 'general'
   res.render("survey", { section });
 });
 
+// Survey choice page
 app.get("/survey-choice", (req, res) => {
   res.render("survey-choice", { userProgress });
 });
 
+// Handle survey submission and update charts
 app.post("/submit-survey", (req, res) => {
   const { section } = req.body;
   userProgress[section] = true;
 
+  // Extract and calculate the average score from the responses
+  let scores = Object.values(req.body)
+    .filter(value => !isNaN(value)) // Keep only numeric values
+    .map(Number); // Convert to numbers
+
+  let newScore = scores.length > 0 ? 
+    Math.round(scores.reduce((sum, val) => sum + val, 0) / scores.length) : 0; // Average
+
+  // Add the calculated average score to the corresponding section
+  if (section === "general") {
+    surveyResults.overall.push(newScore);
+  } else if (section === "mental") {
+    surveyResults.mental.push(newScore);
+  } else if (section === "physical") {
+    surveyResults.physical.push(newScore);
+  }
+
+  // Ensure days array is updated
+  const nextDay = `Day ${surveyResults.days.length + 1}`;
+  surveyResults.days.push(nextDay);
+
   if (userProgress.general && userProgress.mental && userProgress.physical) {
     return res.redirect("/survey?section=completed");
-  } else if (section === "general") {
-    return res.redirect("/survey-choice");
-  } else {
-    return res.redirect("/survey-choice");
   }
+  return res.redirect("/survey-choice");
 });
+
 
 // Handle user login
 app.post("/login", (req, res) => {
@@ -102,4 +141,3 @@ app.post("/signup", handleSignup);
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
-
