@@ -6,61 +6,6 @@
   <title>Home</title>
   <link rel="stylesheet" href="/styles/home.css">
   <script src="https://cdn.plot.ly/plotly-3.0.1.min.js"></script>
-
-  <style>
-    /* Navigation Bar Styles */
-    .navbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background-color: #222;
-      padding: 15px 20px;
-    }
-    .navbar .logo {
-      font-size: 24px;
-      font-weight: bold;
-      color: #ffd700; /* Gold color for emphasis */
-    }
-    .navbar .nav-links {
-      display: flex;
-      gap: 20px;
-    }
-    .navbar a {
-      color: white;
-      text-decoration: none;
-      font-size: 18px;
-      padding: 10px 15px;
-      transition: background 0.3s ease;
-    }
-    .navbar a:hover {
-      background-color: #444;
-      border-radius: 5px;
-    }
-
-    /* Chart Styling */
-    .chart-container {
-      display: flex;
-      justify-content: space-around;
-      flex-wrap: wrap;
-    }
-    .chart {
-      width: 400px;
-      height: 300px;
-    }
-
-    select {
-      padding: 10px;
-      font-size: 16px;
-      margin-top: 10px;
-    }
-
-    .advice-text {
-      background-color: #f9f2d1;
-      border-left: 5px solid #ffd700;
-      padding: 15px;
-      border-radius: 5px;
-    }
-  </style>
 </head>
 <body>
 
@@ -72,7 +17,6 @@
 
     <div class="home-buttons">
       <a href="/survey" class="btn">Take Today's Survey</a>
-      <a href="/logout" class="btn">Logout</a>
     </div>
 
     <!-- Charts Section -->
@@ -93,46 +37,75 @@
       </div>
 
     </div>
+
+    <!-- Feedback Section -->
     <div class="feedback-section">
-      <h2>Personalized Wellness Tips</h2>
-      <div class="feedback-grid">
-        <% const sections = [
-        { title: "Overall Health", feedback: overallFeedback, idPrefix: "overall" },
-        { title: "Mental Health", feedback: mentalFeedback, idPrefix: "mental" },
-        { title: "Physical Health", feedback: physicalFeedback, idPrefix: "physical" }
-      ]; %>
-      
-      <% sections.forEach(section => { %>
-        <div style="margin-top: 30px;">
-          <h2><%= section.title %> Feedback</h2>
-          <% if (section.feedback && section.feedback.length > 0) { %>
-            <select onchange="showAdvice(this.value, '<%= section.idPrefix %>')">
-              <option value="">Select an area to improve</option>
-              <% section.feedback.forEach((item, index) => { %>
-                <option value="<%= section.idPrefix %>Advice<%= index %>"><%= item.question %></option>
-              <% }) %>
-            </select>
-      
-            <% section.feedback.forEach((item, index) => { %>
-              <div id="<%= section.idPrefix %>Advice<%= index %>" class="advice-text" style="display: none; margin-top: 10px;">
-                <p><strong>Why it matters:</strong> <%= item.advice %></p>
-              </div>
-            <% }) %>
-          <% } else { %>
-            <p>No feedback available yet. Complete the <%= section.title.toLowerCase() %> survey to receive tips!</p>
-          <% } %>
-        </div>
-      <% }) %>
-      
-      <script>
-        function showAdvice(id, prefix) {
-          document.querySelectorAll(`div[id^="${prefix}Advice"]`).forEach(el => el.style.display = 'none');
-          if (id) document.getElementById(id).style.display = 'block';
-        }
-      </script>
-      
+      <h2>What Can I Improve?</h2>
     
+      <div class="feedback-grid">
+        <% const cards = [
+          { title: "Mental Health", feedback: mentalFeedback, idPrefix: "mental" },
+          { title: "Physical Health", feedback: physicalFeedback, idPrefix: "physical" }
+        ]; %>
+    
+        <% cards.forEach(section => { %>
+          <div class="feedback-card">
+            <h3><%= section.title %></h3>
+            <% if (section.feedback && section.feedback.length > 0) { %>
+              <select onchange="showAdvice(this.value, '<%= section.idPrefix %>')">
+                <option value="">Choose an area to improve</option>
+                <% section.feedback.forEach((item, index) => { %>
+                  <option value="<%= section.idPrefix %>Advice<%= index %>"><%= item.question %></option>
+                <% }) %>
+              </select>
+    
+              <% section.feedback.forEach((item, index) => { %>
+                <div id="<%= section.idPrefix %>Advice<%= index %>" class="advice-text" style="display: none;">
+                  <p><%= item.advice %></p>
+                </div>
+              <% }) %>
+            <% } else { %>
+              <p class="no-feedback">No feedback yet. Complete the <%= section.title.toLowerCase() %> survey!</p>
+            <% } %>
+          </div>
+        <% }) %>
+    
+        <!-- Centered Overall Health Card -->
+        <div class="overall-row">
+          <div class="feedback-card">
+            <h3>Overall Health</h3>
+            <% if (overallFeedback && overallFeedback.length > 0) { %>
+              <select onchange="showAdvice(this.value, 'overall')">
+                <option value="">Choose an area to improve</option>
+                <% overallFeedback.forEach((item, index) => { %>
+                  <option value="overallAdvice<%= index %>"><%= item.question %></option>
+                <% }) %>
+              </select>
+    
+              <% overallFeedback.forEach((item, index) => { %>
+                <div id="overallAdvice<%= index %>" class="advice-text" style="display: none;">
+                  <p><%= item.advice %></p>
+                </div>
+              <% }) %>
+            <% } else { %>
+              <p class="no-feedback">No feedback yet. Complete the overall survey!</p>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <script>
+      // Function for getting and showing advice
+      function showAdvice(id, prefix) {
+        document.querySelectorAll(`div[id^="${prefix}Advice"]`).forEach(el => el.style.display = 'none');
+        if (id) document.getElementById(id).style.display = 'block';
+      }
+    </script>
+    
+    </div>
   </div>
+
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const overallData = <%- JSON.stringify(overallData) %> || [null, null, null, null, null, null, null];
