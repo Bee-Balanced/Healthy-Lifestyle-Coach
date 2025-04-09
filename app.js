@@ -286,3 +286,8 @@ app.post("/signup", handleSignup);
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+
+//games
+app.get('/games', (req, res) => {
+  res.render('games'); // si usas games.ejs en views/
+});
