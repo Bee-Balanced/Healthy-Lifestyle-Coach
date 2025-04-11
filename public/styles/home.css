@@ -7,12 +7,12 @@ body {
   text-align: center;
 }
 
-/* Updated Home Container (Wider) */
+/* Home Container */
 .home-container {
   background: rgba(255, 255, 255, 0.8);
   padding: 20px;
   margin: 50px auto;
-  max-width: 1200px;  /* Increased width */
+  max-width: 1200px;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
@@ -254,4 +254,104 @@ select {
 
 .calendar td.empty {
   background-color: #dfdfdf;
+}
+
+.calendar-navigation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+#calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+}
+
+.calendar-cell {
+  width: 40px;
+  height: 40px;
+  background-color: #eee;
+  text-align: center;
+  line-height: 40px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.calendar-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 10px;
+}
+
+.calendar-controls button {
+  background: #ffd700;
+  color: #222;
+  border: none;
+  border-radius: 50%;
+  padding: 8px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 30px;
+  height: 30px;
+}
+
+.calendar-controls button:hover {
+  background: #ffaa00;
+  transform: scale(1.1);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+}
+
+.calendar-controls button:active {
+  background: #e68900;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+.calendar-type {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+  text-transform: capitalize;
+}
+
+.calendar-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.calendar-month {
+  font-size: 1.5rem;
+  color: #333;
+  animation: monthTransition 0.3s ease;
+
+}
+
+.calendar-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 10px;
+}
+
+.calendar-type {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+@keyframes monthTransition {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

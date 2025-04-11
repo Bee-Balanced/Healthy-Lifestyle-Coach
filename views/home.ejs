@@ -93,7 +93,14 @@
       </div>
 
       <div class="calendar">
-        <h2 id="calendar-title">Calendar Heatmap</h2>
+        <div class="calendar-header">
+          <h2 id="calendar-month" class="calendar-month">Month</h2>
+          <div class="calendar-controls">
+            <button onclick="changeCalendar(-1)">←</button>
+            <h3 id="calendar-type" class="calendar-type">Health Type</h3>
+            <button onclick="changeCalendar(1)">→</button>
+          </div>
+        </div>
         <table>
           <thead>
             <tr>
@@ -106,8 +113,8 @@
               <th>Saturday</th>
             </tr>
           </thead>
-          <tbody>
-            <%
+          <tbody id="calendar-body">
+            <% 
             function colorForScore(score) {
               if (score >= 8) return "#00c853";
               if (score >= 6) return "#64dd17";
@@ -119,11 +126,18 @@
             const today = new Date();
             const currentMonth = today.getMonth();
             const currentYear = today.getFullYear();
-            const currentMonthName = today.toLocaleString('default', { month: 'long' });
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
             const startingDay = firstDayOfMonth.getDay();
       
+            const calendarData = {
+              overall: calendarTimeline.overall,
+              mental: calendarTimeline.mental,
+              physical: calendarTimeline.physical
+            };
+      
+            const calendarTypes = ['overall', 'mental', 'physical'];
+            const selectedType = 'overall'; // default calendar shown on load
             const calendar = [];
             let week = [];
       
@@ -132,7 +146,7 @@
             for (let day = 1; day <= daysInMonth; day++) {
               const date = new Date(currentYear, currentMonth, day);
               const dateStr = date.toISOString().split('T')[0];
-              const entry = calendarTimeline.days.find(e => e.day === dateStr);
+              const entry = calendarData[selectedType].find(e => e.day === dateStr);
               week.push({
                 number: day,
                 date: dateStr,
@@ -164,8 +178,8 @@
           </tbody>
         </table>
       </div>
+      </div>
       
-    </div>
 
     <script>
       // Function for displaying advice based on selected feedback option.
@@ -230,15 +244,98 @@
         drawChart("physicalChart", "Physical Health Progress", physicalData);
       });
     </script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const calendarData = {
+      overall: <%- JSON.stringify(calendarTimeline.overall) %>,
+      mental: <%- JSON.stringify(calendarTimeline.mental) %>,
+      physical: <%- JSON.stringify(calendarTimeline.physical) %>
+    };
 
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        // Update calendar title with the current month name
-        const monthName = new Date().toLocaleString('default', { month: 'long' });
-        document.getElementById("calendar-title").innerText = monthName;
+    let currentTypeIndex = 0;
+    const calendarTypes = ['overall', 'mental', 'physical'];
+
+    function colorForScore(score) {
+      if (score >= 8) return "#00c853";
+      if (score >= 6) return "#64dd17";
+      if (score >= 4) return "#ffd600";
+      if (score >= 2) return "#ff6d00";
+      return "#d50000";
+    }
+
+    function renderCalendar(type) {
+      const today = new Date();
+      const currentMonth = today.getMonth();
+      const currentMonthName = today.toLocaleString('default', { month: 'long' });
+      const currentYear = today.getFullYear();
+      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+      const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+      const startingDay = firstDayOfMonth.getDay();
+      const monthElem = document.getElementById("calendar-month");
+      const typeElem = document.getElementById("calendar-type");
+      const entries = calendarData[type];
+      const calendar = [];
+      let week = [];
+
+      if (monthElem) monthElem.innerText = currentMonthName;
+      if (typeElem) typeElem.innerText = `${type.charAt(0).toUpperCase() + type.slice(1)} Health`;
+  
+
+      for (let i = 0; i < startingDay; i++) week.push(null);
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(currentYear, currentMonth, day);
+        const dateStr = date.toISOString().split('T')[0];
+        const entry = entries.find(e => e.day === dateStr);
+        week.push({
+          number: day,
+          avgScore: entry?.avgScore ?? null
+        });
+
+        if (week.length === 7) {
+          calendar.push(week);
+          week = [];
+        }
+      }
+
+      while (week.length < 7) week.push(null);
+      calendar.push(week);
+
+      const calendarBody = document.getElementById("calendar-body");
+      calendarBody.innerHTML = "";
+      calendar.forEach(week => {
+        const row = document.createElement("tr");
+        week.forEach(cell => {
+          const td = document.createElement("td");
+          if (cell) {
+            const div = document.createElement("div");
+            div.className = "date-cell";
+            div.style.backgroundColor = cell.avgScore !== null ? colorForScore(cell.avgScore) : "#eeeeee";
+
+            const numberDiv = document.createElement("div");
+            numberDiv.className = "date-number";
+            numberDiv.textContent = cell.number;
+
+            div.appendChild(numberDiv);
+            td.appendChild(div);
+          } else {
+            td.classList.add("empty");
+          }
+          row.appendChild(td);
+        });
+        calendarBody.appendChild(row);
       });
-    </script>
-    
+    }
+
+    window.changeCalendar = function (direction) {
+      currentTypeIndex = (currentTypeIndex + direction + calendarTypes.length) % calendarTypes.length;
+      renderCalendar(calendarTypes[currentTypeIndex]);
+    };
+
+    renderCalendar(calendarTypes[currentTypeIndex]);
+  });
+</script>
+
   </div>
 </body>
 </html>

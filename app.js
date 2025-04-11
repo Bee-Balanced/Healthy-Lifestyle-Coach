@@ -34,7 +34,6 @@ const calendarTimeline = {
   overall: [],
   mental: [],
   physical: [],
-  days: []
 };
 
 // Temporary results, default to one value of 5 if sunday
@@ -48,43 +47,22 @@ let surveyResults = {
 let allResponses = [];
 
 function updateTimeline(date, section, avgScore) {
-  const existingEntry = calendarTimeline.days.find(entry => entry.day === date);
-  if (existingEntry) {
-    existingEntry.avgScore = avgScore;
+  const sectionKey = section === "general" ? "overall" : section;
+  const entry = { day: date, avgScore };
+
+  const timeline = calendarTimeline[sectionKey];
+  const existing = timeline.find(e => e.day === date);
+
+  if (existing) {
+    existing.avgScore = avgScore;
   } else {
-    calendarTimeline.days.push({
-      day: date,
-      avgScore
-    });
+    timeline.push(entry);
   }
-  if (calendarTimeline.days.length > 30) {
-    calendarTimeline.days.shift();
+
+  if (timeline.length > 30) {
+    timeline.shift();
   }
 }
-
-
-function getMonthlyColors() {
-  const today = new Date();
-  const currentMonth = today.getMonth(); // Get the current month (0-based index)
-  const currentYear = today.getFullYear();
-  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-  const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
-  let colorsForMonth = [];
-  
-  for (let day = 1; day <= daysInMonth; day++) {
-    const dayOfWeek = new Date(currentYear, currentMonth, day).getDay();
-    const dayOfWeekName = weekdays[dayOfWeek];
-    
-    // Find the color for this day
-    const color = calendarTimeline.days.find(entry => entry.day === dayOfWeekName)?.color || '';
-    colorsForMonth.push({ day, color });
-  }
-
-  return colorsForMonth;
-}
-
-
 
 // Redirect to login page
 app.get("/", (req, res) => {
@@ -114,7 +92,7 @@ app.get("/home", (req, res) => {
 
   // Hold the listed days of the week
   const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-  const colorsForMonth = getMonthlyColors();
+  const calendarView = req.query.calendarView || "overall";
 
 
   console.log(surveyResults)
@@ -184,7 +162,7 @@ app.get("/home", (req, res) => {
         advice: adviceMap[entry.question]
       }));
   }
-
+  
   // Render the home page with the results
   res.render("home", {
     overallData: surveyResults.overall,
@@ -194,8 +172,8 @@ app.get("/home", (req, res) => {
     overallFeedback: getLowestFeedback("general"),
     mentalFeedback: getLowestFeedback("mental"),
     physicalFeedback: getLowestFeedback("physical"),
-    colorsForMonth,
-    calendarTimeline 
+    calendarTimeline,
+    calendarView
   });
 });
 
@@ -289,7 +267,7 @@ app.post("/submit-survey", (req, res) => {
   const nextDay = weekdays[currentDayIndex];
 
   // If it is Sunday and need to loop the chart back, go back to Sunday and reset the chart
-  const dateKey = new Date().toISOString().split("T")[0];
+  const dateKey = new Date().toLocaleDateString("en-CA");
   updateTimeline(dateKey, section, avgScore);
   if (surveyResults.days.length > 0 && surveyResults.days[surveyResults.days.length - 1] === "Saturday" && nextDay === "Sunday") {    console.log("Resetting chart for new week starting from Sunday");
     
