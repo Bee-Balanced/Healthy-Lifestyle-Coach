@@ -30,16 +30,39 @@ app.set("view engine", "ejs");
 
 // Temporary data handling
 let userProgress = {};
+const calendarTimeline = {
+  overall: [],
+  mental: [],
+  physical: [],
+};
+
 // Temporary results, default to one value of 5 if sunday
 let surveyResults = {
-  overall: [5],
-  mental: [5],
-  physical: [5],
+  overall: [],
+  mental: [],
+  physical: [],
   days: []
 };
 // Temporary holding responses
 let allResponses = [];
 
+function updateTimeline(date, section, avgScore) {
+  const sectionKey = section === "general" ? "overall" : section;
+  const entry = { day: date, avgScore };
+
+  const timeline = calendarTimeline[sectionKey];
+  const existing = timeline.find(e => e.day === date);
+
+  if (existing) {
+    existing.avgScore = avgScore;
+  } else {
+    timeline.push(entry);
+  }
+
+  if (timeline.length > 30) {
+    timeline.shift();
+  }
+}
 
 // Redirect to login page
 app.get("/", (req, res) => {
@@ -66,16 +89,24 @@ app.get("/logout", (req, res) => {
 app.get("/home", (req, res) => {
   // Get the current day of the week
   const today = new Date().getDay();
+
   // Hold the listed days of the week
   const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const calendarView = req.query.calendarView || "overall";
 
+
+  console.log(surveyResults)
   // Fill the temporary list with default values of 5 if no previous values
-  while (surveyResults.days.length < today) {
-    surveyResults.days.push(weekdays[surveyResults.days.length]); 
-    surveyResults.overall.push(5);
-    surveyResults.mental.push(5);
-    surveyResults.physical.push(5);
+  if (surveyResults.days.length === 0 && allResponses.length === 0) {
+    while (surveyResults.days.length < today) {
+      surveyResults.days.push(weekdays[surveyResults.days.length]); 
+      surveyResults.overall.push(5);
+      surveyResults.mental.push(5);
+      surveyResults.physical.push(5);
+    }
   }
+  console.log(surveyResults)
+
 
   // Given advice for each point
     // Will make this more dynamic in the future, for testing currently it provides basic feedback
@@ -131,7 +162,7 @@ app.get("/home", (req, res) => {
         advice: adviceMap[entry.question]
       }));
   }
-
+  
   // Render the home page with the results
   res.render("home", {
     overallData: surveyResults.overall,
@@ -140,7 +171,9 @@ app.get("/home", (req, res) => {
     days: surveyResults.days,
     overallFeedback: getLowestFeedback("general"),
     mentalFeedback: getLowestFeedback("mental"),
-    physicalFeedback: getLowestFeedback("physical")
+    physicalFeedback: getLowestFeedback("physical"),
+    calendarTimeline,
+    calendarView
   });
 });
 
@@ -163,14 +196,19 @@ app.post("/submit-survey", (req, res) => {
   userProgress[section] = true;
   // Get today's day
   const today = new Date().getDay();
+
+  console.log("Today: ", today)
+  const yesterday = today === 0 ? 6 : today - 1;
   const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
   // Fill in all of the survey results with defaults of 5 if no data
-  while (surveyResults.days.length < today) {
-    surveyResults.days.push(weekdays[surveyResults.days.length]); 
-    surveyResults.overall.push(5);
-    surveyResults.mental.push(5);
-    surveyResults.physical.push(5);
+  if (surveyResults.days.length === 0 && allResponses.length === 0) {
+    while (surveyResults.days.length < yesterday) {
+      surveyResults.days.push(weekdays[surveyResults.days.length]); 
+      surveyResults.overall.push(5);
+      surveyResults.mental.push(5);
+      surveyResults.physical.push(5);
+    }
   }
 
   let scores = Object.entries(req.body)
@@ -229,14 +267,18 @@ app.post("/submit-survey", (req, res) => {
   const nextDay = weekdays[currentDayIndex];
 
   // If it is Sunday and need to loop the chart back, go back to Sunday and reset the chart
-    // TODO: Implement a Heatmap to show all of the data, chart is just for weekly progress
-  if (surveyResults.days.length > 0 && surveyResults.days[surveyResults.days.length - 1] === "Saturday" && nextDay === "Sunday") {
+  const dateKey = new Date().toLocaleDateString("en-CA");
+  updateTimeline(dateKey, section, avgScore);
+  if (surveyResults.days.length > 0 && surveyResults.days[surveyResults.days.length - 1] === "Saturday" && nextDay === "Sunday") {    console.log("Resetting chart for new week starting from Sunday");
+    
+    // Reset the chart while keeping the first Sunday entry
     surveyResults = {
-      overall: [],
-      mental: [],
-      physical: [],
-      days: []
+        overall: [],
+        mental: [avgScore],
+        physical: [avgScore],
+        days: []
     };
+
   }
 
   surveyResults.days.push(nextDay);
@@ -255,6 +297,7 @@ app.post("/submit-survey", (req, res) => {
   }
   return res.redirect("/survey-choice");
 });
+
 
 
 // Handle user login
