@@ -43,7 +43,12 @@ let allResponses = [];
 
 // Redirect to login page
 app.get("/", (req, res) => {
-  res.redirect("/login");
+  res.redirect("/welcome");
+});
+
+// Welcome route
+app.get("/welcome", (req, res) => {
+  res.render("welcome");
 });
 
 // Login route
