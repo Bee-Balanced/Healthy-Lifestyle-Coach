@@ -11,6 +11,8 @@
 
   <div class="survey-container">
     <h1>Daily Survey</h1>
+
+    <% const user = typeof userProgress !== 'undefined' ? userProgress : {}; %>
     
     <% if (section === "completed") { %>
       <h2>All surveys completed for today!</h2>
@@ -34,6 +36,10 @@
       <% } %>
       <a href="/home" class="btn">Home</a>
       <a href="/games" class="btn">Game</a>
+
+    <% } else if (section === "general" && userProgress.general) { %>
+      <h2>You have already completed the General Survey today!</h2>
+      <a href="/survey?section=choice" class="btn">Continue</a>
     
     <% } else { %>
       <form action="/submit-survey" method="POST">
