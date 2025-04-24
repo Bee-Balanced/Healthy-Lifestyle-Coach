@@ -28,6 +28,23 @@ body {
   margin-bottom: 20px;
 }
 
+/* Home Footer */
+.home-footer {
+  margin-top: 40px;
+  padding: 20px;
+  text-align: center;
+  background-color: #f0f4f8;
+  color: #333;
+  font-size: 14px;
+}
+.home-footer a {
+  color: #0077cc;
+  text-decoration: none;
+}
+.home-footer a:hover {
+  text-decoration: underline;
+}
+
 /* Button Styles */
 .home-buttons .btn {
   display: inline-block;
