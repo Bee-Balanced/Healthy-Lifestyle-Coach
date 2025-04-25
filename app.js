@@ -187,7 +187,25 @@ app.get("/home", (req, res) => {
 // Survey route
 app.get("/survey", (req, res) => {
   const section = req.query.section || "general";
-  res.render("survey", { section });
+  const today = new Date().toLocaleDateString("en-CA"); // new
+
+  // Check if the survey was already completed today - new
+  const allCompletedToday = 
+    userProgress.general === today &&
+    userProgress.mental === today &&
+    userProgress.physical === today;
+
+  if (allCompletedToday) {
+    return res.render("survey", { section: "completed", userProgress });
+  }
+
+  // If specific section already completed today
+  if (userProgress[section] === today) {
+    return res.redirect("/survey-choice");
+  }
+
+  // Otherwise, render the survey page
+  res.render("survey", { section, userProgress});
 });
 
 // Survey choice page
@@ -198,7 +216,10 @@ app.get("/survey-choice", (req, res) => {
 // Handle survey submission and update charts
 app.post("/submit-survey", (req, res) => {
   const { section } = req.body;
-  userProgress[section] = true;
+  const todayDate = new Date().toLocaleDateString("en-CA"); // new
+  userProgress[section] = todayDate; //new 
+  // userProgress[section] = true; - replaced
+
   // Get today's day
   const today = new Date().getDay();
 
