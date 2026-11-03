@@ -205,39 +205,57 @@
             .filter(entry => entry.val !== null && entry.val !== 0);
 
           const lastEntry = validIndices[validIndices.length - 1];
-          if (!lastEntry) return;
-
-          const lastX = days[lastEntry.idx];
-          const lastY = data[lastEntry.idx];
-
-          Plotly.newPlot(chartId, [{
-            x: days,
-            y: data,
-            type: 'scatter',
-            mode: 'lines+markers',
-            marker: { color: '#FFFFFF' },
-            line: { color: '#FFFFFF' }
-          }], {
+          
+          const layout = 
+          {
             title: title,
             titlefont: { color: '#FFD700' },
             xaxis: { title: "Days", tickfont: { color: '#37AE0F' }, linecolor: '#37AE0F' },
             yaxis: { title: "Score", range: [0, 10], tickfont: { color: '#37AE0F' }, linecolor: '#37AE0F' },
             plot_bgcolor: '#cae9f6',
-            paper_bgcolor: '#cae9f6',
-            images: [{
-              source: "/images/bee.gif",
-              x: lastX,
-              y: lastY,
-              xref: "x",
-              yref: "y",
-              sizex: 3,
-              sizey: 3,
-              xanchor: "center",
-              yanchor: "middle",
-              layer: "above"
-            }]
-          });
-        }
+            paper_bgcolor: '#cae9f6'
+};
+
+if (lastEntry) 
+{
+  const lastX = days[lastEntry.idx];      
+  const lastY = data[lastEntry.idx];
+
+  layout.images = [{                      
+    source: "/images/bee.gif",
+    x: lastX,
+    y: lastY,
+    xref: "x",
+    yref: "y",
+    sizex: 3,
+    sizey: 3,
+    xanchor: "center",
+    yanchor: "middle",
+    layer: "above"
+  }];
+} else {
+  layout.annotations = [{
+    text: "No scores yet. Take today's survey! 🐝",
+    xref: "paper",
+    yref: "paper",
+    x: 0.5,
+    y: 0.5,
+    showarrow: false,
+    font: { size: 16, color: "#555" }
+  }];
+}
+
+          
+
+  Plotly.newPlot(chartId, [{
+  x: days,
+  y: data,
+  type: 'scatter',
+  mode: 'lines+markers',
+  marker: { color: '#FFFFFF' },
+  line: { color: '#FFFFFF' }
+}], layout);
+}
 
         drawChart("overallChart", "Overall Health Progress", overallData);
         drawChart("mentalChart", "Mental Health Progress", mentalData);
